@@ -10,7 +10,7 @@ import FooterLink from "@/components/forms/FooterLink";
 
 
 const SignIn = () => {
-    const {register, handleSubmit, control, formState:{errors, isSubmitting}} = useForm<SignUpFormData>({
+    const {register, handleSubmit, control, formState:{errors, isSubmitting}} = useForm<SignInFormData>({
         defaultValues:{
             fullName:"",
             email:"",
@@ -22,7 +22,7 @@ const SignIn = () => {
         },
         mode:"onBlur"
     })
-    const onSubmit = (data:SignUpFormData)=> {
+    const onSubmit = (data:SignInFormData)=> {
         try{
             console.log(data)
         }catch(e){
