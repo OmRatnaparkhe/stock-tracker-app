@@ -1,3 +1,4 @@
+"use server"
 import {connectToDatabase} from "@/database/mongoose";
 
 async function main(){
