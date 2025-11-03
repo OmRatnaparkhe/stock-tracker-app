@@ -7,7 +7,8 @@ interface TradingViewWidgetProps{
     scriptUrl:string,
     config:Record<string,unknown>,
     height?:number,
-    className?:string
+    className?:string,
+
 }
 const TradingViewWidget = ({scriptUrl, title, height=600, config,className}:TradingViewWidgetProps) => {
     const containerRef = useTradingViewWidget(scriptUrl,config,height);
