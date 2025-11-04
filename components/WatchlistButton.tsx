@@ -1,5 +1,6 @@
 "use client";
 import React, { useMemo, useState } from "react";
+import { addToWatchlist, removeFromWatchlist } from "@/lib/client/watchlist";
 
 // Minimal WatchlistButton implementation to satisfy page requirements.
 // This component focuses on UI contract only. It toggles local state and
@@ -14,16 +15,35 @@ const WatchlistButton = ({
                              onWatchlistChange,
                          }: WatchlistButtonProps) => {
     const [added, setAdded] = useState<boolean>(!!isInWatchlist);
+    const [pending, setPending] = useState<boolean>(false);
 
     const label = useMemo(() => {
         if (type === "icon") return added ? "" : "";
         return added ? "Remove from Watchlist" : "Add to Watchlist";
     }, [added, type]);
 
-    const handleClick = () => {
+    const handleClick = async () => {
+        if (pending) return;
         const next = !added;
+        // optimistic update
         setAdded(next);
         onWatchlistChange?.(symbol, next);
+        try {
+            setPending(true);
+            if (next) {
+                await addToWatchlist(symbol, company);
+            } else {
+                await removeFromWatchlist(symbol);
+            }
+        } catch (e) {
+            // revert on failure
+            setAdded(!next);
+            onWatchlistChange?.(symbol, !next);
+            // no extra UI dependencies; swallow error
+            console.error("Watchlist toggle failed", e);
+        } finally {
+            setPending(false);
+        }
     };
 
     if (type === "icon") {
@@ -53,20 +73,12 @@ const WatchlistButton = ({
     }
 
     return (
-        <button className={`watchlist-btn ${added ? "watchlist-remove" : ""}`} onClick={handleClick}>
-            {showTrashIcon && added ? (
-                <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    strokeWidth={1.5}
-                    stroke="currentColor"
-                    className="w-5 h-5 mr-2"
-                >
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 7h12M9 7V5a1 1 0 011-1h4a1 1 0 011 1v2m-7 4v6m4-6v6m4-6v6" />
-                </svg>
-            ) : null}
-            <span>{label}</span>
+        <button
+            className={`watchlist-btn ${added ? "watchlist-remove" : ""} inline-flex items-center justify-center gap-2 px-4 py-2`}
+            onClick={handleClick}
+            disabled={pending}
+        >
+            <span className="leading-none">{label}</span>
         </button>
     );
 };
